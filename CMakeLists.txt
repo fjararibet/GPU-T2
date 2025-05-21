@@ -8,6 +8,9 @@ set(GLFW_BUILD_DOCS     OFF CACHE BOOL "Disable GLFW docs")
 set(GLFW_INSTALL        OFF CACHE BOOL "Disable GLFW install")
 add_subdirectory(external/glfw)
 
-add_executable(GameOfLife main.cpp)
+file(GLOB SOURCES "src/*.cpp")
+add_executable(GameOfLife ${SOURCES})
+
+target_include_directories(GameOfLife PRIVATE include/)
 target_link_libraries(GameOfLife PRIVATE glfw)
 
