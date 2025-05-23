@@ -10,7 +10,7 @@ void processInput(GLFWwindow *window);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_HEIGHT = 800;
 
 const char *vertexShaderSource = R"(
 #version 330 core
@@ -105,8 +105,8 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  int grid_size = 3;
-  float square_size = 0.2f;
+  int grid_size = 10;
+  float square_size = 0.1f;
   std::vector<float> vertices;
   // std::vector<float> vertices = {
   //     0.5f, 0.5f, 0.0f,  1.0f, 1.0f,  1.0f,
@@ -116,37 +116,33 @@ int main() {
   //     0.5f, 0.5f, 0.0f,  1.0f, 1.0f,  1.0f,
   //     -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
   // };
-  int step_x = 2 / (grid_size + 1);
+  float step = 2.0f / (grid_size + 1);
   for (int i = 0; i < grid_size; i++) {
-    float pos_x = -0.5f + 0.5f * i;
-    float pos_y = 0.0f;
-    float left = pos_x - square_size / 2;
-    float right = pos_x + square_size / 2;
-    float top = pos_y + square_size / 2;
-    float bottom = pos_y - square_size / 2;
+    for (int j = 0; j < grid_size; j++) {
+      float pos_x = -1.0f + step * (i + 1);
+      float pos_y = -1.0f + step * (j + 1);
+      float left = pos_x - square_size / 2;
+      float right = pos_x + square_size / 2;
+      float top = pos_y + square_size / 2;
+      float bottom = pos_y - square_size / 2;
 
-    float r = 1.0f;
-    float g = 1.0f;
-    float b = 1.0f;
-    vertices.insert(vertices.end(), {
-        right, top, 0.0f, r, g, b,
-        right, bottom, 0.0f, r, g, b,
-        left, bottom, 0.0f, r, g, b,
-    });
+      float r = 1.0f;
+      float g = 1.0f;
+      float b = 1.0f;
+      // clang-format off
+      vertices.insert(vertices.end(), {
+          right, top, 0.0f, r, g, b,
+          right, bottom, 0.0f, r, g, b,
+          left, bottom, 0.0f, r, g, b,
+      });
     vertices.insert(vertices.end(), {
         left, top, 0.0f, r, g, b,
         left, bottom, 0.0f, r, g, b,
         right, top, 0.0f, r, g, b,
     });
-  }
-  for(size_t i = 0; i < vertices.size(); i++) {
-    if (i % 6 == 0) {
-      std::cout << "\n";
+      // clang-format on
     }
-    std::cout << vertices [i] << " ";
   }
-  // clang-format off
-  // clang-format on
   unsigned int indices[] = {
       // note that we start from 0!
       0, 1, 3, // first Triangle
