@@ -116,10 +116,10 @@ int main() {
   //     0.5f, 0.5f, 0.0f,  1.0f, 1.0f,  1.0f,
   //     -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
   // };
+  int step_x = 2 / (grid_size + 1);
   for (int i = 0; i < grid_size; i++) {
-    int step_x = 2 / (grid_size + 1) - 1;
-    float pos_x = step_x * i;
-    float pos_y = 0.5f;
+    float pos_x = -0.5f + 0.5f * i;
+    float pos_y = 0.0f;
     float left = pos_x - square_size / 2;
     float right = pos_x + square_size / 2;
     float top = pos_y + square_size / 2;
