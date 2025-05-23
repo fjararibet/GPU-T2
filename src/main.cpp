@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include "gameOfLife.hpp"
 #include <iostream>
 #include <vector>
 
@@ -106,16 +107,15 @@ int main() {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   int grid_size = 10;
+  std::vector<std::vector<bool>> grid(grid_size, std::vector<bool>(grid_size, false));
+  for (int i = 0; i < grid_size; i++) {
+    for (int j = 0; j < grid_size; j++) {
+      grid[i][j] = rand() % 2 == 0;
+    }
+  }
+  GameOfLife gol(grid);
   float square_size = 0.1f;
   std::vector<float> vertices;
-  // std::vector<float> vertices = {
-  //     0.5f, 0.5f, 0.0f,  1.0f, 1.0f,  1.0f,
-  //     0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  1.0f,
-  //     -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
-  //     -0.5f, 0.5f, 0.0f,  1.0f,  1.0f, 1.0f,
-  //     0.5f, 0.5f, 0.0f,  1.0f, 1.0f,  1.0f,
-  //     -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
-  // };
   float step = 2.0f / (grid_size + 1);
   for (int i = 0; i < grid_size; i++) {
     for (int j = 0; j < grid_size; j++) {
@@ -126,9 +126,9 @@ int main() {
       float top = pos_y + square_size / 2;
       float bottom = pos_y - square_size / 2;
 
-      float r = 1.0f;
-      float g = 1.0f;
-      float b = 1.0f;
+      float r = grid[i][j] ? 1.0f : 0.0f;
+      float g = r;
+      float b = r;
       // clang-format off
       vertices.insert(vertices.end(), {
           right, top, 0.0f, r, g, b,
