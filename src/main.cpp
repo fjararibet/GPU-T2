@@ -9,6 +9,7 @@
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 std::vector<float> vertices;
+unsigned int VBO, VAO, EBO;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -150,7 +151,6 @@ int main() {
       0, 1, 3, // first Triangle
       1, 2, 3  // second Triangle
   };
-  unsigned int VBO, VAO, EBO;
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
   glGenBuffers(1, &EBO);
@@ -247,9 +247,12 @@ void processInput(GLFWwindow *window) {
     for (int i = 0; i < grid.size(); i++) {
       for (int j = 0; j < grid[0].size(); j++) {
         float v = grid[i][j] ? 1.0f : 0.0f;
-        vertices[(i + j) * 6 + 3] = v;
-        vertices[(i + j) * 6 + 4] = v;
-        vertices[(i + j) * 6 + 5] = v;
+        int base_index = (i * grid.size() + j) * 6;
+        for (int index = base_index + 3; index < base_index + 6; index++) {
+          vertices[index] = v;
+          glBindBuffer(GL_ARRAY_BUFFER, VBO);
+          glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
+        }
       }
     }
   }
