@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <vector>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -104,13 +105,47 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
+  int grid_size = 3;
+  float square_size = 0.2f;
+  std::vector<float> vertices;
+  // std::vector<float> vertices = {
+  //     0.5f, 0.5f, 0.0f,  1.0f, 1.0f,  1.0f,
+  //     0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  1.0f,
+  //     -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
+  //     -0.5f, 0.5f, 0.0f,  1.0f,  1.0f, 1.0f,
+  //     0.5f, 0.5f, 0.0f,  1.0f, 1.0f,  1.0f,
+  //     -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
+  // };
+  for (int i = 0; i < grid_size; i++) {
+    int step_x = 2 / (grid_size + 1) - 1;
+    float pos_x = step_x * i;
+    float pos_y = 0.5f;
+    float left = pos_x - square_size / 2;
+    float right = pos_x + square_size / 2;
+    float top = pos_y + square_size / 2;
+    float bottom = pos_y - square_size / 2;
+
+    float r = 1.0f;
+    float g = 1.0f;
+    float b = 1.0f;
+    vertices.insert(vertices.end(), {
+        right, top, 0.0f, r, g, b,
+        right, bottom, 0.0f, r, g, b,
+        left, bottom, 0.0f, r, g, b,
+    });
+    vertices.insert(vertices.end(), {
+        left, top, 0.0f, r, g, b,
+        left, bottom, 0.0f, r, g, b,
+        right, top, 0.0f, r, g, b,
+    });
+  }
+  for(size_t i = 0; i < vertices.size(); i++) {
+    if (i % 6 == 0) {
+      std::cout << "\n";
+    }
+    std::cout << vertices [i] << " ";
+  }
   // clang-format off
-    float vertices[] = {
-         0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
-    };
   // clang-format on
   unsigned int indices[] = {
       // note that we start from 0!
@@ -126,11 +161,12 @@ int main() {
   glBindVertexArray(VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
+               vertices.data(), GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
+  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+  //              GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
@@ -174,8 +210,8 @@ int main() {
     glBindVertexArray(
         VAO); // seeing as we only have a single VAO there's no need to bind it
               // every time, but we'll do so to keep things a bit more organized
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
