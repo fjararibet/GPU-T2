@@ -8,6 +8,7 @@
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
+std::vector<float> vertices;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -107,15 +108,16 @@ int main() {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   int grid_size = 10;
-  std::vector<std::vector<bool>> grid(grid_size, std::vector<bool>(grid_size, false));
+  std::vector<std::vector<bool>> grid(grid_size,
+                                      std::vector<bool>(grid_size, false));
   for (int i = 0; i < grid_size; i++) {
     for (int j = 0; j < grid_size; j++) {
       grid[i][j] = rand() % 2 == 0;
     }
   }
   GameOfLife gol(grid);
+  glfwSetWindowUserPointer(window, &gol);
   float square_size = 0.1f;
-  std::vector<float> vertices;
   float step = 2.0f / (grid_size + 1);
   for (int i = 0; i < grid_size; i++) {
     for (int j = 0; j < grid_size; j++) {
@@ -236,6 +238,21 @@ int main() {
 void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
+
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    GameOfLife *pgol =
+        static_cast<GameOfLife *>(glfwGetWindowUserPointer(window));
+    pgol->tick();
+    auto grid = pgol->get_grid();
+    for (int i = 0; i < grid.size(); i++) {
+      for (int j = 0; j < grid[0].size(); j++) {
+        float v = grid[i][j] ? 1.0f : 0.0f;
+        vertices[(i + j) * 6 + 3] = v;
+        vertices[(i + j) * 6 + 4] = v;
+        vertices[(i + j) * 6 + 5] = v;
+      }
+    }
+  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(GameOfLife)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -std=c++17 -Wshadow -Wformat=2 -Wfloat-equal -Wconversion -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC")
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Disable GLFW examples")
 set(GLFW_BUILD_TESTS    OFF CACHE BOOL "Disable GLFW tests")

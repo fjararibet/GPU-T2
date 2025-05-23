@@ -14,15 +14,23 @@ void GameOfLife::tick() {
       };
       int neighbor_count = 0;
       for (auto [ni, nj] : neighbors) {
+        if (ni < 0 || nj < 0 || ni >= grid.size() || nj >= grid[0].size())
+          continue;
+
         if (grid[ni][nj]) {
           neighbor_count++;
         }
       }
-      next_grid[i][j] = neighbor_count == 2 && neighbor_count == 3 && grid[i][j];
+      next_grid[i][j] =
+          neighbor_count == 2 && neighbor_count == 3 && grid[i][j];
       if (neighbor_count == 3) {
         next_grid[i][j] = true;
       }
     }
   }
   grid = next_grid;
+}
+
+const std::vector<std::vector<bool>> GameOfLife::get_grid() const {
+  return grid;
 }
