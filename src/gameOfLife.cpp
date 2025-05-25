@@ -7,7 +7,7 @@ void GameOfLife::tick() {
   std::vector<std::vector<bool>> next_grid(grid.size(),
                                            std::vector(grid[0].size(), false));
   for (std::size_t i = 0; i < grid.size(); i++) {
-    for (std::size_t j = 0; j < grid.size(); j++) {
+    for (std::size_t j = 0; j < grid[0].size(); j++) {
       std::vector<std::pair<std::size_t, std::size_t>> neighbors = {
           {i - 1, j}, {i - 1, j - 1}, {i, j - 1}, {i + 1, j - 1},
           {i + 1, j}, {i + 1, j + 1}, {i, j + 1}, {i - 1, j + 1},

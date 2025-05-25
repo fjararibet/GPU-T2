@@ -50,8 +50,7 @@ int main() {
 
   // glfw window creation
   // --------------------
-  GLFWwindow *window =
-      glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+  GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
   if (window == NULL) {
     std::cout << "Failed to create GLFW window" << std::endl;
     glfwTerminate();
@@ -79,8 +78,7 @@ int main() {
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-              << infoLog << std::endl;
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
   }
   // fragment shader
   unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -90,8 +88,7 @@ int main() {
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
-              << infoLog << std::endl;
+    std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
   }
   // link shaders
   unsigned int shaderProgram = glCreateProgram();
@@ -102,19 +99,18 @@ int main() {
   glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
   if (!success) {
     glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
-              << infoLog << std::endl;
+    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
   }
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  int grid_size = 40;
-  std::vector<std::vector<bool>> grid(grid_size,
-                                      std::vector<bool>(grid_size, false));
-  for (int i = 0; i < grid_size; i++) {
-    for (int j = 0; j < grid_size; j++) {
+  int N = 30;
+  int M = 20;
+  std::vector<std::vector<bool>> grid(N, std::vector<bool>(M, false));
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
       grid[i][j] = rand() % 2 == 0;
     }
   }
@@ -123,16 +119,18 @@ int main() {
 
   // fraction of step
   float gap_frac = 0.20f;
-  float step = 2.0f / (grid_size + 1);
-  for (int i = 0; i < grid_size; i++) {
-    for (int j = 0; j < grid_size; j++) {
-      float pos_x = -1.0f + step * (i + 1);
-      float pos_y = -1.0f + step * (j + 1);
-      float gap = step / 2 - step * gap_frac;
-      float left = pos_x - gap;
-      float right = pos_x + gap;
-      float top = pos_y + gap;
-      float bottom = pos_y - gap;
+  float step_x = 2.0f / (N + 1);
+  float step_y = 2.0f / (M + 1);
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      float pos_x = -1.0f + step_x * (i + 1);
+      float pos_y = -1.0f + step_y * (j + 1);
+      float gap_x = step_x / 2 - step_x * gap_frac;
+      float gap_y = step_y / 2 - step_y * gap_frac;
+      float left = pos_x - gap_x;
+      float right = pos_x + gap_x;
+      float top = pos_y + gap_x;
+      float bottom = pos_y - gap_x;
 
       float r = grid[i][j] ? 1.0f : 0.3f;
       float g = r;
@@ -164,8 +162,7 @@ int main() {
   glBindVertexArray(VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float),
-               vertices.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
   // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
@@ -174,8 +171,7 @@ int main() {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
   // note that this is allowed, the call to glVertexAttribPointer registered VBO
@@ -210,9 +206,8 @@ int main() {
 
     // draw our first triangle
     glUseProgram(shaderProgram);
-    glBindVertexArray(
-        VAO); // seeing as we only have a single VAO there's no need to bind it
-              // every time, but we'll do so to keep things a bit more organized
+    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it
+                            // every time, but we'll do so to keep things a bit more organized
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time
@@ -244,24 +239,20 @@ void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS &&
-      !key_press[GLFW_KEY_SPACE]) {
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !key_press[GLFW_KEY_SPACE]) {
     key_press[GLFW_KEY_SPACE] = true;
-    GameOfLife *pgol =
-        static_cast<GameOfLife *>(glfwGetWindowUserPointer(window));
+    GameOfLife *pgol = static_cast<GameOfLife *>(glfwGetWindowUserPointer(window));
     pgol->tick();
     auto grid = pgol->get_grid();
     for (int i = 0; i < grid.size(); i++) {
       for (int j = 0; j < grid[0].size(); j++) {
         float v = grid[i][j] ? 1.0f : 0.3f;
-        int base_index = (i * grid.size() + j) * 6 * 6;
-        for (int vertex = base_index; vertex < base_index + 6 * 6;
-             vertex += 6) {
+        int base_index = (i * grid[0].size() + j) * 6 * 6;
+        for (int vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
           for (int index = vertex + 3; index < vertex + 6; index++) {
             vertices[index] = v;
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float),
-                            sizeof(float), &vertices[index]);
+            glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
           }
         }
       }
