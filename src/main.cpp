@@ -4,12 +4,14 @@
 
 #include "gameOfLife.hpp"
 #include <iostream>
+#include <map>
 #include <vector>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 std::vector<float> vertices;
 unsigned int VBO, VAO, EBO;
+std::map<int, bool> key_press;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -108,7 +110,7 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  int grid_size = 10;
+  int grid_size = 20;
   std::vector<std::vector<bool>> grid(grid_size,
                                       std::vector<bool>(grid_size, false));
   for (int i = 0; i < grid_size; i++) {
@@ -118,7 +120,7 @@ int main() {
   }
   GameOfLife gol(grid);
   glfwSetWindowUserPointer(window, &gol);
-  float square_size = 0.1f;
+  float square_size = 0.08f;
   float step = 2.0f / (grid_size + 1);
   for (int i = 0; i < grid_size; i++) {
     for (int j = 0; j < grid_size; j++) {
@@ -239,7 +241,9 @@ void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS &&
+      !key_press[GLFW_KEY_SPACE]) {
+    key_press[GLFW_KEY_SPACE] = true;
     GameOfLife *pgol =
         static_cast<GameOfLife *>(glfwGetWindowUserPointer(window));
     pgol->tick();
@@ -247,14 +251,21 @@ void processInput(GLFWwindow *window) {
     for (int i = 0; i < grid.size(); i++) {
       for (int j = 0; j < grid[0].size(); j++) {
         float v = grid[i][j] ? 1.0f : 0.0f;
-        int base_index = (i * grid.size() + j) * 6;
-        for (int index = base_index + 3; index < base_index + 6; index++) {
-          vertices[index] = v;
-          glBindBuffer(GL_ARRAY_BUFFER, VBO);
-          glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
+        int base_index = (i * grid.size() + j) * 6 * 6;
+        for (int vertex = base_index; vertex < base_index + 6 * 6;
+             vertex += 6) {
+          for (int index = vertex + 3; index < vertex + 6; index++) {
+            vertices[index] = v;
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float),
+                            sizeof(float), &vertices[index]);
+          }
         }
       }
     }
+  }
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+    key_press[GLFW_KEY_SPACE] = false;
   }
 }
 
