@@ -110,7 +110,7 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  int grid_size = 100;
+  int grid_size = 90;
   std::vector<std::vector<bool>> grid(grid_size,
                                       std::vector<bool>(grid_size, false));
   for (int i = 0; i < grid_size; i++) {
@@ -121,15 +121,16 @@ int main() {
   GameOfLife gol(grid);
   glfwSetWindowUserPointer(window, &gol);
   float square_size = 0.01f;
+  float gap_size = 0.005f;
   float step = 2.0f / (grid_size + 1);
   for (int i = 0; i < grid_size; i++) {
     for (int j = 0; j < grid_size; j++) {
       float pos_x = -1.0f + step * (i + 1);
       float pos_y = -1.0f + step * (j + 1);
-      float left = pos_x - square_size / 2;
-      float right = pos_x + square_size / 2;
-      float top = pos_y + square_size / 2;
-      float bottom = pos_y - square_size / 2;
+      float left = pos_x - (step/2 - gap_size);
+      float right = pos_x + (step/2 - gap_size);
+      float top = pos_y + (step/2 - gap_size);
+      float bottom = pos_y - (step/2 - gap_size);
 
       float r = grid[i][j] ? 1.0f : 0.3f;
       float g = r;
