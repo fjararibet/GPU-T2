@@ -120,7 +120,6 @@ int main() {
   }
   GameOfLife gol(grid);
   glfwSetWindowUserPointer(window, &gol);
-  float square_size = 0.01f;
   float gap_size = 0.005f;
   float step = 2.0f / (grid_size + 1);
   for (int i = 0; i < grid_size; i++) {
