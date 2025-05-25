@@ -131,7 +131,7 @@ int main() {
       float top = pos_y + square_size / 2;
       float bottom = pos_y - square_size / 2;
 
-      float r = grid[i][j] ? 1.0f : 0.0f;
+      float r = grid[i][j] ? 1.0f : 0.3f;
       float g = r;
       float b = r;
       // clang-format off
@@ -250,7 +250,7 @@ void processInput(GLFWwindow *window) {
     auto grid = pgol->get_grid();
     for (int i = 0; i < grid.size(); i++) {
       for (int j = 0; j < grid[0].size(); j++) {
-        float v = grid[i][j] ? 1.0f : 0.0f;
+        float v = grid[i][j] ? 1.0f : 0.3f;
         int base_index = (i * grid.size() + j) * 6 * 6;
         for (int vertex = base_index; vertex < base_index + 6 * 6;
              vertex += 6) {
