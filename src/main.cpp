@@ -2,7 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "gameOfLife.hpp"
+#include "gameOfLife/cpu.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
@@ -114,7 +114,7 @@ int main() {
       grid[i][j] = rand() % 2 == 0;
     }
   }
-  GameOfLifeGPU gol(grid);
+  GameOfLifeCPU gol(grid);
   glfwSetWindowUserPointer(window, &gol);
 
   // fraction of step
@@ -239,7 +239,7 @@ void processInput(GLFWwindow *window) {
 
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !key_press[GLFW_KEY_SPACE]) {
     key_press[GLFW_KEY_SPACE] = true;
-    GameOfLifeGPU *pgol = static_cast<GameOfLifeGPU *>(glfwGetWindowUserPointer(window));
+    GameOfLifeCPU *pgol = static_cast<GameOfLifeCPU *>(glfwGetWindowUserPointer(window));
     pgol->tick();
     auto grid = pgol->get_grid();
     for (int i = 0; i < grid.size(); i++) {
