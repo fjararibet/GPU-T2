@@ -1,6 +1,6 @@
-#include <vector>
+#include "interface.hpp"
 
-class GameOfLifeGPU {
+class GameOfLifeGPU : public GameOfLifeInterface{
 private:
   std::vector<std::vector<bool>> grid;
 public:
