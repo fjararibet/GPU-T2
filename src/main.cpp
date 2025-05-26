@@ -3,8 +3,11 @@
 #include <GLFW/glfw3.h>
 
 #include "gameOfLife/cpu.hpp"
+#include "gameOfLife/interface.hpp"
+#include "gameOfLife/opencl.hpp"
 #include <iostream>
 #include <map>
+#include <memory>
 #include <vector>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -114,8 +117,9 @@ int main() {
       grid[i][j] = rand() % 2 == 0;
     }
   }
-  GameOfLifeCPU gol(grid);
-  glfwSetWindowUserPointer(window, &gol);
+  std::unique_ptr<GameOfLifeInterface> gol;
+  gol = std::make_unique<GameOfLifeCPU>(grid);
+  glfwSetWindowUserPointer(window, gol.get());
 
   // fraction of step
   float gap_frac = 0.20f;
