@@ -106,8 +106,8 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  int N = 30;
-  int M = 20;
+  int N = 20;
+  int M = 30;
   std::vector<std::vector<bool>> grid(N, std::vector<bool>(M, false));
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < M; j++) {
@@ -119,18 +119,16 @@ int main() {
 
   // fraction of step
   float gap_frac = 0.20f;
-  float step_x = 2.0f / (N + 1);
-  float step_y = 2.0f / (M + 1);
+  float step = 2.0f / (std::max(N, M) + 1);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < M; j++) {
-      float pos_x = -1.0f + step_x * (i + 1);
-      float pos_y = -1.0f + step_y * (j + 1);
-      float gap_x = step_x / 2 - step_x * gap_frac;
-      float gap_y = step_y / 2 - step_y * gap_frac;
-      float left = pos_x - gap_x;
-      float right = pos_x + gap_x;
-      float top = pos_y + gap_x;
-      float bottom = pos_y - gap_x;
+      float pos_x = (N > M ? -1.0f : (N - M) * step) + step * (i + 1);
+      float pos_y = (M > N ? -1.0f : (M - N) * step) + step * (j + 1);
+      float gap = step / 2 - step * gap_frac;
+      float left = pos_x - gap;
+      float right = pos_x + gap;
+      float top = pos_y + gap;
+      float bottom = pos_y - gap;
 
       float r = grid[i][j] ? 1.0f : 0.3f;
       float g = r;
