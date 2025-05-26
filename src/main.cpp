@@ -108,7 +108,7 @@ int main() {
   // ------------------------------------------------------------------
   int N = 30;
   int M = 30;
-  std::vector<std::vector<bool>> grid(N, std::vector<bool>(M, false));
+  std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < M; j++) {
       grid[i][j] = rand() % 2 == 0;
