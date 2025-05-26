@@ -5,6 +5,7 @@
 #include "gameOfLife/cpu.hpp"
 #include "gameOfLife/interface.hpp"
 #include "gameOfLife/opencl.hpp"
+#include "gameOfLife/cuda.hpp"
 #include <iostream>
 #include <map>
 #include <memory>
@@ -39,7 +40,19 @@ void main() {
 }
 )";
 
-int main() {
+int main(int argc, char** argv) {
+  bool cuda = false;
+  bool opencl = false;
+  bool cpu = true;
+  for(int i = 0; i < argc; i++) {
+    std::string arg = argv[i]; 
+    if (arg == "--cuda") {
+      cuda = true;
+    }
+    else if (arg == "--opencl") {
+      opencl = true;
+    }
+  }
   // glfw: initialize and configure
   // ------------------------------
   glfwInit();
@@ -118,7 +131,12 @@ int main() {
     }
   }
   std::unique_ptr<GameOfLifeInterface> gol;
-  gol = std::make_unique<GameOfLifeCPU>(grid);
+  if (cpu)
+    gol = std::make_unique<GameOfLifeCPU>(grid);
+  if (cuda)
+    gol = std::make_unique<GameOfLifeCuda>(grid);
+  if (opencl)
+    gol = std::make_unique<GameOfLifeOpenCL>(grid);
   glfwSetWindowUserPointer(window, gol.get());
 
   // fraction of step
