@@ -1,6 +1,8 @@
 #include "gameOfLife/opencl.hpp"
 #include <utility>
 
+#include <CL/cl.h>
+
 GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(grid_) {}
 
 void GameOfLifeOpenCL::tick() {

@@ -10,6 +10,8 @@ set(GLFW_BUILD_DOCS     OFF CACHE BOOL "Disable GLFW docs")
 set(GLFW_INSTALL        OFF CACHE BOOL "Disable GLFW install")
 add_subdirectory(external/glfw)
 
+find_package(OpenCL REQUIRED)
+
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
 add_executable(GameOfLife ${SOURCES})
 
