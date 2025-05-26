@@ -106,7 +106,7 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  int N = 20;
+  int N = 30;
   int M = 30;
   std::vector<std::vector<bool>> grid(N, std::vector<bool>(M, false));
   for (int i = 0; i < N; i++) {
@@ -114,7 +114,7 @@ int main() {
       grid[i][j] = rand() % 2 == 0;
     }
   }
-  GameOfLife gol(grid);
+  GameOfLifeGPU gol(grid);
   glfwSetWindowUserPointer(window, &gol);
 
   // fraction of step
@@ -122,8 +122,8 @@ int main() {
   float step = 2.0f / (std::max(N, M) + 1);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < M; j++) {
-      float pos_x = (N > M ? -1.0f : (N - M) * step) + step * (i + 1);
-      float pos_y = (M > N ? -1.0f : (M - N) * step) + step * (j + 1);
+      float pos_x = (N >= M ? -1.0f : (N - M) * step) + step * (i + 1);
+      float pos_y = (M >= N ? -1.0f : (M - N) * step) + step * (j + 1);
       float gap = step / 2 - step * gap_frac;
       float left = pos_x - gap;
       float right = pos_x + gap;
@@ -239,7 +239,7 @@ void processInput(GLFWwindow *window) {
 
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !key_press[GLFW_KEY_SPACE]) {
     key_press[GLFW_KEY_SPACE] = true;
-    GameOfLife *pgol = static_cast<GameOfLife *>(glfwGetWindowUserPointer(window));
+    GameOfLifeGPU *pgol = static_cast<GameOfLifeGPU *>(glfwGetWindowUserPointer(window));
     pgol->tick();
     auto grid = pgol->get_grid();
     for (int i = 0; i < grid.size(); i++) {

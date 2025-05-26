@@ -1,9 +1,9 @@
 #include "gameOfLife.hpp"
 #include <utility>
 
-GameOfLife::GameOfLife(std::vector<std::vector<bool>> &grid_) : grid(grid_) {}
+GameOfLifeGPU::GameOfLifeGPU(std::vector<std::vector<bool>> &grid_) : grid(grid_) {}
 
-void GameOfLife::tick() {
+void GameOfLifeGPU::tick() {
   std::vector<std::vector<bool>> next_grid(grid.size(),
                                            std::vector(grid[0].size(), false));
   for (std::size_t i = 0; i < grid.size(); i++) {
@@ -31,6 +31,6 @@ void GameOfLife::tick() {
   grid = next_grid;
 }
 
-const std::vector<std::vector<bool>> GameOfLife::get_grid() const {
+const std::vector<std::vector<bool>> GameOfLifeGPU::get_grid() const {
   return grid;
 }
