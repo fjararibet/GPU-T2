@@ -17,6 +17,7 @@ std::vector<float> vertices;
 unsigned int VBO, VAO, EBO;
 std::map<int, bool> key_press;
 std::unique_ptr<GameOfLifeInterface> gol;
+void tick_vertices();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -231,19 +232,7 @@ int main(int argc, char **argv) {
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it
                             // every time, but we'll do so to keep things a bit more organized
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
-    gol->tick();
-    auto curr_grid = gol->get_grid();
-    for (int i = 0; i < curr_grid.size(); i++) {
-      for (int j = 0; j < curr_grid[0].size(); j++) {
-        float v = curr_grid[i][j] ? 1.0f : 0.3f;
-        int base_index = (i * curr_grid[0].size() + j) * 6 * 6;
-        for (int vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
-          vertices[vertex + 3] = v;
-          vertices[vertex + 4] = v;
-          vertices[vertex + 5] = v;
-        }
-      }
-    }
+    tick_vertices();
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
@@ -310,4 +299,19 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     y = (height - width) / 2;
   }
   glViewport(x, y, new_width, new_height);
+}
+void tick_vertices() {
+  gol->tick();
+  auto curr_grid = gol->get_grid();
+  for (int i = 0; i < curr_grid.size(); i++) {
+    for (int j = 0; j < curr_grid[0].size(); j++) {
+      float v = curr_grid[i][j] ? 1.0f : 0.3f;
+      int base_index = (i * curr_grid[0].size() + j) * 6 * 6;
+      for (int vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
+        vertices[vertex + 3] = v;
+        vertices[vertex + 4] = v;
+        vertices[vertex + 5] = v;
+      }
+    }
+  }
 }
