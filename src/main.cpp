@@ -121,8 +121,8 @@ int main(int argc, char **argv) {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  size_t N = 30;
-  size_t M = 30;
+  size_t N = 2;
+  size_t M = 3;
   std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
   for (size_t i = 0; i < N; i++) {
     for (size_t j = 0; j < M; j++) {
@@ -229,11 +229,11 @@ int main(int argc, char **argv) {
                             // every time, but we'll do so to keep things a bit more organized
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
     gol->tick();
-    auto grid = gol->get_grid();
-    for (size_t i = 0; i < grid.size(); i++) {
-      for (size_t j = 0; j < grid[0].size(); j++) {
-        float v = grid[i][j] ? 1.0f : 0.3f;
-        size_t base_index = (i * grid[0].size() + j) * 6 * 6;
+    auto curr_grid = gol->get_grid();
+    for (size_t i = 0; i < curr_grid.size(); i++) {
+      for (size_t j = 0; j < curr_grid[0].size(); j++) {
+        float v = curr_grid[i][j] ? 1.0f : 0.3f;
+        size_t base_index = (i * curr_grid[0].size() + j) * 6 * 6;
         for (size_t vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
           vertices[vertex + 3] = v;
           vertices[vertex + 4] = v;
