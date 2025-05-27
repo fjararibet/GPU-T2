@@ -5,7 +5,8 @@ sudo apt install ocl-icd-opencl-dev
 
 ## X11 Dependencies
 ```
-sudo apt install sudo apt-get install xorg-dev
+sudo apt install xorg-dev libxkbcommon-dev
+
 ```
 
 ## Wayland Dependencies

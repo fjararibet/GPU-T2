@@ -27,6 +27,7 @@ add_library(imgui STATIC ${IMGUI_SOURCES})
 target_include_directories(imgui PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
+    ${CMAKE_SOURCE_DIR}/external/glfw/include
 )
 
 # OpenCL
