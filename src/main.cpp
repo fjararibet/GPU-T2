@@ -16,6 +16,7 @@ void processInput(GLFWwindow *window);
 std::vector<float> vertices;
 unsigned int VBO, VAO, EBO;
 std::map<int, bool> key_press;
+std::unique_ptr<GameOfLifeInterface> gol;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -40,16 +41,23 @@ void main() {
 }
 )";
 
+int N = 100;
+int M = 100;
+std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
+
+// bool args
+bool cuda = false;
+bool opencl = false;
+bool cpu = true;
 int main(int argc, char **argv) {
-  bool cuda = false;
-  bool opencl = false;
-  bool cpu = true;
   for (int i = 0; i < argc; i++) {
     std::string arg = argv[i];
     if (arg == "--cuda") {
       cuda = true;
+      cpu = false;
     } else if (arg == "--opencl") {
       opencl = true;
+      cpu = false;
     }
   }
   // glfw: initialize and configure
@@ -121,22 +129,17 @@ int main(int argc, char **argv) {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  int N = 200;
-  int M = 300;
-  std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < M; j++) {
       grid[i][j] = rand() % 2 == 0;
     }
   }
-  std::unique_ptr<GameOfLifeInterface> gol;
   if (cpu)
     gol = std::make_unique<GameOfLifeCPU>(grid);
   if (cuda)
     gol = std::make_unique<GameOfLifeCuda>(grid);
   if (opencl)
     gol = std::make_unique<GameOfLifeOpenCL>(grid);
-  glfwSetWindowUserPointer(window, gol.get());
 
   // fraction of step
   float gap_frac = 0.20f;
@@ -160,11 +163,11 @@ int main(int argc, char **argv) {
           right, bottom, 0.0f, r, g, b,
           left, bottom, 0.0f, r, g, b,
       });
-    vertices.insert(vertices.end(), {
-        left, top, 0.0f, r, g, b,
-        left, bottom, 0.0f, r, g, b,
-        right, top, 0.0f, r, g, b,
-    });
+      vertices.insert(vertices.end(), {
+          left, top, 0.0f, r, g, b,
+          left, bottom, 0.0f, r, g, b,
+          right, top, 0.0f, r, g, b,
+      });
       // clang-format on
     }
   }
@@ -277,21 +280,12 @@ void processInput(GLFWwindow *window) {
 
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !key_press[GLFW_KEY_SPACE]) {
     key_press[GLFW_KEY_SPACE] = true;
-    GameOfLifeCPU *pgol = static_cast<GameOfLifeCPU *>(glfwGetWindowUserPointer(window));
-    pgol->tick();
-    auto grid = pgol->get_grid();
-    for (int i = 0; i < grid.size(); i++) {
-      for (int j = 0; j < grid[0].size(); j++) {
-        float v = grid[i][j] ? 1.0f : 0.3f;
-        int base_index = (i * grid[0].size() + j) * 6 * 6;
-        for (int vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
-          for (int index = vertex + 3; index < vertex + 6; index++) {
-            vertices[index] = v;
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
-          }
-        }
-      }
+    cpu = !cpu;
+    auto curr_grid = gol->get_grid();
+    if (cpu) {
+      gol = std::make_unique<GameOfLifeCPU>(curr_grid);
+    } else {
+      gol = std::make_unique<GameOfLifeOpenCL>(curr_grid);
     }
   }
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
