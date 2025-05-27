@@ -3,9 +3,9 @@
 #include <GLFW/glfw3.h>
 
 #include "gameOfLife/cpu.hpp"
+#include "gameOfLife/cuda.hpp"
 #include "gameOfLife/interface.hpp"
 #include "gameOfLife/opencl.hpp"
-#include "gameOfLife/cuda.hpp"
 #include <iostream>
 #include <map>
 #include <memory>
@@ -40,16 +40,15 @@ void main() {
 }
 )";
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   bool cuda = false;
   bool opencl = false;
   bool cpu = true;
-  for(int i = 0; i < argc; i++) {
-    std::string arg = argv[i]; 
+  for (int i = 0; i < argc; i++) {
+    std::string arg = argv[i];
     if (arg == "--cuda") {
       cuda = true;
-    }
-    else if (arg == "--opencl") {
+    } else if (arg == "--opencl") {
       opencl = true;
     }
   }
@@ -122,8 +121,8 @@ int main(int argc, char** argv) {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  size_t N = 100;
-  size_t M = 100;
+  size_t N = 30;
+  size_t M = 30;
   std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
   for (size_t i = 0; i < N; i++) {
     for (size_t j = 0; j < M; j++) {
@@ -236,15 +235,15 @@ int main(int argc, char** argv) {
         float v = grid[i][j] ? 1.0f : 0.3f;
         size_t base_index = (i * grid[0].size() + j) * 6 * 6;
         for (size_t vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
-          for (size_t index = vertex + 3; index < vertex + 6; index++) {
-            vertices[index] = v;
-            glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
-          }
+          vertices[vertex + 3] = v;
+          vertices[vertex + 4] = v;
+          vertices[vertex + 5] = v;
         }
       }
     }
 
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
 
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time

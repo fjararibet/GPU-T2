@@ -7,7 +7,6 @@ std::string kernel = R"(
 kernel void gameOfLife(global int* In, global int* Out, int n, int m) {
     const int idx = get_global_id(0);
     if (idx < n * m) {
-        Out[idx] = In[idx];
         int curr_row = idx / m;
         int curr_col = idx % m;
         int neighbor_count = 0;
@@ -21,10 +20,12 @@ kernel void gameOfLife(global int* In, global int* Out, int n, int m) {
             }
           }
         }
-        Out[curr_row * m + curr_col] = In[curr_row * m + curr_col] && (neighbor_count == 2 || neighbor_count == 3);
+
+        int new_cell = In[curr_row * m + curr_col] && (neighbor_count == 2 || neighbor_count == 3);
         if (neighbor_count == 3) {
-          Out[curr_row * m + curr_col] = 1;
+          new_cell = 1;
         }
+        Out[curr_row * m + curr_col] = new_cell;
     }
 }
 )";
@@ -34,14 +35,13 @@ GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(
   m = grid[0].size();
   size_t N_ELEMENTS = n * m;
 
-
   try {
     // Query for platforms
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
 
     std::vector<cl::Device> devices;
-    platforms[0].getDevices(CL_DEVICE_TYPE_GPU|CL_DEVICE_TYPE_CPU, &devices);
+    platforms[0].getDevices(CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU, &devices);
 
     context = cl::Context(devices);
     queue = cl::CommandQueue(context, devices[0]);
@@ -65,10 +65,15 @@ GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(
 
     gol_kernel = cl::Kernel(program, "gameOfLife");
 
+    auto max_work_group_size = devices[0].getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+    if (local_size > max_work_group_size) {
+      local_size = max_work_group_size;
+    }
     global_size = ((N_ELEMENTS + local_size - 1) / local_size) * local_size;
 
     // Write initial data once
     queue.enqueueWriteBuffer(bufferIn, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferInHost.data());
+    queue.finish();
   } catch (cl::Error err) {
     std::cout << "Error: " << err.what() << "(" << err.err() << ")" << std::endl;
   }
@@ -89,6 +94,7 @@ void GameOfLifeOpenCL::tick() {
 
     // Read output buffer back to host
     queue.enqueueReadBuffer(bufferOut, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferOutHost.data());
+    queue.finish();
 
     // Update grid from bufferOutHost
     for (size_t i = 0; i < n; i++) {
@@ -103,6 +109,7 @@ void GameOfLifeOpenCL::tick() {
 
     // Write new input buffer for next kernel execution
     queue.enqueueWriteBuffer(bufferIn, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferInHost.data());
+    queue.finish();
   } catch (cl::Error err) {
     std::cout << "Error: " << err.what() << "(" << err.err() << ")" << std::endl;
   }
