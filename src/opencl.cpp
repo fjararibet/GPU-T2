@@ -9,9 +9,22 @@ kernel void gameOfLife(global int* In, global int* Out, int n, int m) {
     const int idx = get_global_id(0);
     if (idx < n * m) {
         Out[idx] = In[idx];
-        int row = idx / m;
-        int col = idx % m;
-        Out[row * m + col] = In[row * m + col];
+        int curr_row = idx / m;
+        int curr_col = idx % m;
+        int neighbor_count = 0;
+        for(int row = curr_row - 1; row <= curr_row + 1; row++) {
+          if (row < 0 || row >= n) continue;
+          for(int col = curr_col - 1; col <= curr_col + 1; col++) {
+            if (col < 0 || col >= m) continue;
+            if (In[row * m + col]) {
+              neighbor_count++;
+            }
+          }
+        }
+        Out[curr_row * m + curr_col] = In[curr_row * m + curr_col] && (neighbor_count == 2 || neighbor_count == 3);
+        if (neighbor_count == 3) {
+          Out[curr_row * m + curr_col] = 1;
+        }
     }
 }
 )";
