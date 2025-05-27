@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 std::vector<float> vertices;
@@ -148,10 +149,26 @@ int main(int argc, char **argv) {
   // ------------------------------------------------------------------
   random_grid();
   set_gol();
-
-  // fraction of step
-
   set_vertices();
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  glGenBuffers(1, &EBO);
+  // bind the Vertex Array Object first, then bind and set vertex buffer(s), and
+  // then configure vertex attributes(s).
+  glBindVertexArray(VAO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+  //              GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
   // note that this is allowed, the call to glVertexAttribPointer registered VBO
   // as the vertex attribute's bound vertex buffer object so afterwards we can
   // safely unbind
@@ -193,6 +210,7 @@ int main(int argc, char **argv) {
 
     // Build UI
     ImGui::Begin("Game Of Life Controls");
+    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     if (ImGui::InputInt("Columns", &N) | ImGui::InputInt("Rows", &M)) {
       random_grid();
       set_gol();
@@ -204,8 +222,6 @@ int main(int argc, char **argv) {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     tick_vertices();
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
 
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time
@@ -215,7 +231,6 @@ int main(int argc, char **argv) {
     // -------------------------------------------------------------------------------
     glfwSwapBuffers(window);
     glfwPollEvents();
-
   }
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
@@ -288,10 +303,12 @@ void tick_vertices() {
       }
     }
   }
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
 }
 void random_grid() {
   grid.resize(N);
-  for(auto& v : grid) {
+  for (auto &v : grid) {
     v.resize(M);
   }
   for (int i = 0; i < N; i++) {
@@ -307,9 +324,8 @@ void set_gol() {
     gol = std::make_unique<GameOfLifeCuda>(grid);
   if (opencl)
     gol = std::make_unique<GameOfLifeOpenCL>(grid);
-
 }
-void set_vertices () {
+void set_vertices() {
   vertices.clear();
   float gap_frac = 0.20f;
   float step = 2.0f / ((float)std::max(N, M) + 1);
@@ -345,23 +361,6 @@ void set_vertices () {
       0, 1, 3, // first Triangle
       1, 2, 3  // second Triangle
   };
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
-  // bind the Vertex Array Object first, then bind and set vertex buffer(s), and
-  // then configure vertex attributes(s).
-  glBindVertexArray(VAO);
-
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-  //              GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
 }
