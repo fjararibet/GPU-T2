@@ -1,3 +1,4 @@
+#define CL_HPP_TARGET_OPENCL_VERSION 450
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
@@ -10,6 +11,9 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -68,6 +72,8 @@ int main(int argc, char **argv) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+
+
 #ifdef __APPLE__
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -89,6 +95,15 @@ int main(int argc, char **argv) {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return -1;
   }
+
+  // ImGui
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO(); 
+  (void) io;
+  ImGui::StyleColorsDark();
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init("#version 450");
 
   // build and compile our shader program
   // ------------------------------------
