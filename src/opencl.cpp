@@ -15,6 +15,7 @@ kernel void gameOfLife(global int* In, global int* Out, int n, int m) {
           if (row < 0 || row >= n) continue;
           for(int col = curr_col - 1; col <= curr_col + 1; col++) {
             if (col < 0 || col >= m) continue;
+            if (row == curr_row && col == curr_col) continue;
             if (In[row * m + col]) {
               neighbor_count++;
             }
