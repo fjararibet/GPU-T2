@@ -121,11 +121,11 @@ int main(int argc, char **argv) {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  size_t N = 2;
-  size_t M = 3;
+  int N = 200;
+  int M = 300;
   std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
-  for (size_t i = 0; i < N; i++) {
-    for (size_t j = 0; j < M; j++) {
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
       grid[i][j] = rand() % 2 == 0;
     }
   }
@@ -141,10 +141,10 @@ int main(int argc, char **argv) {
   // fraction of step
   float gap_frac = 0.20f;
   float step = 2.0f / ((float)std::max(N, M) + 1);
-  for (size_t i = 0; i < N; i++) {
-    for (size_t j = 0; j < M; j++) {
-      float pos_x = (N >= M ? -1.0f : (float)(N - M) * step) + step * (float)(i + 1);
-      float pos_y = (M >= N ? -1.0f : (float)(M - N) * step) + step * (float)(j + 1);
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      float pos_x = (N >= M ? -1.0f : (N - M) * step) + step * (i + 1);
+      float pos_y = (M >= N ? -1.0f : (M - N) * step) + step * (j + 1);
       float gap = step / 2 - step * gap_frac;
       float left = pos_x - gap;
       float right = pos_x + gap;
@@ -230,11 +230,11 @@ int main(int argc, char **argv) {
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
     gol->tick();
     auto curr_grid = gol->get_grid();
-    for (size_t i = 0; i < curr_grid.size(); i++) {
-      for (size_t j = 0; j < curr_grid[0].size(); j++) {
+    for (int i = 0; i < curr_grid.size(); i++) {
+      for (int j = 0; j < curr_grid[0].size(); j++) {
         float v = curr_grid[i][j] ? 1.0f : 0.3f;
-        size_t base_index = (i * curr_grid[0].size() + j) * 6 * 6;
-        for (size_t vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
+        int base_index = (i * curr_grid[0].size() + j) * 6 * 6;
+        for (int vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
           vertices[vertex + 3] = v;
           vertices[vertex + 4] = v;
           vertices[vertex + 5] = v;
@@ -280,12 +280,12 @@ void processInput(GLFWwindow *window) {
     GameOfLifeCPU *pgol = static_cast<GameOfLifeCPU *>(glfwGetWindowUserPointer(window));
     pgol->tick();
     auto grid = pgol->get_grid();
-    for (size_t i = 0; i < grid.size(); i++) {
-      for (size_t j = 0; j < grid[0].size(); j++) {
+    for (int i = 0; i < grid.size(); i++) {
+      for (int j = 0; j < grid[0].size(); j++) {
         float v = grid[i][j] ? 1.0f : 0.3f;
-        size_t base_index = (i * grid[0].size() + j) * 6 * 6;
-        for (size_t vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
-          for (size_t index = vertex + 3; index < vertex + 6; index++) {
+        int base_index = (i * grid[0].size() + j) * 6 * 6;
+        for (int vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
+          for (int index = vertex + 3; index < vertex + 6; index++) {
             vertices[index] = v;
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
