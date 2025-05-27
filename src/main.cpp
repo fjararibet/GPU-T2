@@ -22,6 +22,9 @@ unsigned int VBO, VAO, EBO;
 std::map<int, bool> key_press;
 std::unique_ptr<GameOfLifeInterface> gol;
 void tick_vertices();
+void random_grid();
+void set_gol();
+void set_vertices();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -143,73 +146,12 @@ int main(int argc, char **argv) {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < M; j++) {
-      grid[i][j] = rand() % 2 == 0;
-    }
-  }
-  if (cpu)
-    gol = std::make_unique<GameOfLifeCPU>(grid);
-  if (cuda)
-    gol = std::make_unique<GameOfLifeCuda>(grid);
-  if (opencl)
-    gol = std::make_unique<GameOfLifeOpenCL>(grid);
+  random_grid();
+  set_gol();
 
   // fraction of step
-  float gap_frac = 0.20f;
-  float step = 2.0f / ((float)std::max(N, M) + 1);
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < M; j++) {
-      float pos_x = (N >= M ? -1.0f : (N - M) * step) + step * (i + 1);
-      float pos_y = (M >= N ? -1.0f : (M - N) * step) + step * (j + 1);
-      float gap = step / 2 - step * gap_frac;
-      float left = pos_x - gap;
-      float right = pos_x + gap;
-      float top = pos_y + gap;
-      float bottom = pos_y - gap;
 
-      float r = grid[i][j] ? 1.0f : 0.3f;
-      float g = r;
-      float b = r;
-      // clang-format off
-      vertices.insert(vertices.end(), {
-          right, top, 0.0f, r, g, b,
-          right, bottom, 0.0f, r, g, b,
-          left, bottom, 0.0f, r, g, b,
-      });
-      vertices.insert(vertices.end(), {
-          left, top, 0.0f, r, g, b,
-          left, bottom, 0.0f, r, g, b,
-          right, top, 0.0f, r, g, b,
-      });
-      // clang-format on
-    }
-  }
-  unsigned int indices[] = {
-      // note that we start from 0!
-      0, 1, 3, // first Triangle
-      1, 2, 3  // second Triangle
-  };
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
-  // bind the Vertex Array Object first, then bind and set vertex buffer(s), and
-  // then configure vertex attributes(s).
-  glBindVertexArray(VAO);
-
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-  //              GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
+  set_vertices();
   // note that this is allowed, the call to glVertexAttribPointer registered VBO
   // as the vertex attribute's bound vertex buffer object so afterwards we can
   // safely unbind
@@ -250,8 +192,12 @@ int main(int argc, char **argv) {
     ImGui::NewFrame();
 
     // Build UI
-    ImGui::Begin("Hello, ImGui!");
-    ImGui::Text("This is a test window.");
+    ImGui::Begin("Game Of Life Controls");
+    if (ImGui::InputInt("Columns", &N) | ImGui::InputInt("Rows", &M)) {
+      random_grid();
+      set_gol();
+      set_vertices();
+    }
     ImGui::End();
 
     ImGui::Render();
@@ -342,4 +288,80 @@ void tick_vertices() {
       }
     }
   }
+}
+void random_grid() {
+  grid.resize(N);
+  for(auto& v : grid) {
+    v.resize(M);
+  }
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      grid[i][j] = rand() % 2 == 0;
+    }
+  }
+}
+void set_gol() {
+  if (cpu)
+    gol = std::make_unique<GameOfLifeCPU>(grid);
+  if (cuda)
+    gol = std::make_unique<GameOfLifeCuda>(grid);
+  if (opencl)
+    gol = std::make_unique<GameOfLifeOpenCL>(grid);
+
+}
+void set_vertices () {
+  vertices.clear();
+  float gap_frac = 0.20f;
+  float step = 2.0f / ((float)std::max(N, M) + 1);
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      float pos_x = (N >= M ? -1.0f : (N - M) * step) + step * (i + 1);
+      float pos_y = (M >= N ? -1.0f : (M - N) * step) + step * (j + 1);
+      float gap = step / 2 - step * gap_frac;
+      float left = pos_x - gap;
+      float right = pos_x + gap;
+      float top = pos_y + gap;
+      float bottom = pos_y - gap;
+
+      float r = grid[i][j] ? 1.0f : 0.3f;
+      float g = r;
+      float b = r;
+      // clang-format off
+      vertices.insert(vertices.end(), {
+          right, top, 0.0f, r, g, b,
+          right, bottom, 0.0f, r, g, b,
+          left, bottom, 0.0f, r, g, b,
+      });
+      vertices.insert(vertices.end(), {
+          left, top, 0.0f, r, g, b,
+          left, bottom, 0.0f, r, g, b,
+          right, top, 0.0f, r, g, b,
+      });
+      // clang-format on
+    }
+  }
+  unsigned int indices[] = {
+      // note that we start from 0!
+      0, 1, 3, // first Triangle
+      1, 2, 3  // second Triangle
+  };
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  glGenBuffers(1, &EBO);
+  // bind the Vertex Array Object first, then bind and set vertex buffer(s), and
+  // then configure vertex attributes(s).
+  glBindVertexArray(VAO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+  //              GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 }
