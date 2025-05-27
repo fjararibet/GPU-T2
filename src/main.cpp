@@ -23,7 +23,7 @@ std::map<int, bool> key_press;
 std::unique_ptr<GameOfLifeInterface> gol;
 void tick_vertices();
 void random_grid();
-void set_gol();
+void set_gol(std::vector<std::vector<int>> &grid);
 void set_vertices();
 
 // settings
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   random_grid();
-  set_gol();
+  set_gol(grid);
   set_vertices();
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
@@ -208,14 +208,35 @@ int main(int argc, char **argv) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    auto curr_grid = gol->get_grid();
     // Build UI
     ImGui::Begin("Game Of Life Controls");
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Cells/s: %.0f", ImGui::GetIO().Framerate * N * M);
-    if (ImGui::InputInt("Rows", &M) | ImGui::InputInt("Columns", &N)) {
+    if (ImGui::SliderInt("Rows", &M, 1, 1000) | ImGui::SliderInt("Columns", &N, 1, 1000)) {
       random_grid();
-      set_gol();
+      set_gol(grid);
       set_vertices();
+    }
+    if (ImGui::Button("CPU")) {
+      cpu = true;
+      cuda = false;
+      opencl = false;
+      set_gol(curr_grid);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("OpenCL")) {
+      cpu = false;
+      cuda = false;
+      opencl = true;
+      set_gol(curr_grid);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Cuda")) {
+      cpu = false;
+      cuda = true;
+      opencl = false;
+      set_gol(curr_grid);
     }
     ImGui::End();
 
@@ -317,7 +338,7 @@ void random_grid() {
     }
   }
 }
-void set_gol() {
+void set_gol(std::vector<std::vector<int>> &grid) {
   if (cpu)
     gol = std::make_unique<GameOfLifeCPU>(grid);
   if (cuda)
