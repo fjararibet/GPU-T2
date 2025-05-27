@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
 
   // render loop
   // -----------
+  glfwSwapInterval(0);  // Disable VSync (uncaps the frame rate)
   while (!glfwWindowShouldClose(window)) {
 
     // input
