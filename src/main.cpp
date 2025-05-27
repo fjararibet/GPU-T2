@@ -15,7 +15,6 @@
 #include <memory>
 #include <vector>
 
-
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
 std::vector<float> vertices;
@@ -189,7 +188,7 @@ int main(int argc, char **argv) {
 
   // render loop
   // -----------
-  glfwSwapInterval(0);  // Disable VSync (uncaps the frame rate)
+  glfwSwapInterval(0); // Disable VSync (uncaps the frame rate)
   while (!glfwWindowShouldClose(window)) {
 
     // input
@@ -222,7 +221,6 @@ int main(int argc, char **argv) {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     tick_vertices();
-
 
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time
@@ -329,11 +327,22 @@ void set_gol() {
 void set_vertices() {
   vertices.clear();
   float gap_frac = 0.20f;
-  float step = 2.0f / ((float)std::max(N, M) + 1);
+  float step = 2.0f / (std::max(N, M) + 1); // spacing per cell
+
+  // Calculate the total width and height of the grid in coordinate units
+  float grid_width = step * N;
+  float grid_height = step * M;
+
+  // Calculate offsets to center the grid in [-1,1]
+  float x_offset = -grid_width / 2.0f;
+  float y_offset = -grid_height / 2.0f;
+
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < M; j++) {
-      float pos_x = (N >= M ? -1.0f : (N - M) * step) + step * (i + 1);
-      float pos_y = (M >= N ? -1.0f : (M - N) * step) + step * (j + 1);
+      // position of cell center
+      float pos_x = x_offset + step * (i + 0.5f);
+      float pos_y = y_offset + step * (j + 0.5f);
+
       float gap = step / 2 - step * gap_frac;
       float left = pos_x - gap;
       float right = pos_x + gap;
@@ -357,11 +366,7 @@ void set_vertices() {
       // clang-format on
     }
   }
-  unsigned int indices[] = {
-      // note that we start from 0!
-      0, 1, 3, // first Triangle
-      1, 2, 3  // second Triangle
-  };
+
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
 }
