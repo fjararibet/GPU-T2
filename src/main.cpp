@@ -211,7 +211,8 @@ int main(int argc, char **argv) {
     // Build UI
     ImGui::Begin("Game Of Life Controls");
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-    if (ImGui::InputInt("Columns", &N) | ImGui::InputInt("Rows", &M)) {
+    ImGui::Text("Cells/s: %.0f", ImGui::GetIO().Framerate * N * M);
+    if (ImGui::InputInt("Rows", &M) | ImGui::InputInt("Columns", &N)) {
       random_grid();
       set_gol();
       set_vertices();
@@ -327,19 +328,16 @@ void set_gol() {
 void set_vertices() {
   vertices.clear();
   float gap_frac = 0.20f;
-  float step = 2.0f / (std::max(N, M) + 1); // spacing per cell
+  float step = 2.0f / (std::max(N, M) + 1);
 
-  // Calculate the total width and height of the grid in coordinate units
   float grid_width = step * N;
   float grid_height = step * M;
 
-  // Calculate offsets to center the grid in [-1,1]
   float x_offset = -grid_width / 2.0f;
   float y_offset = -grid_height / 2.0f;
 
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < M; j++) {
-      // position of cell center
       float pos_x = x_offset + step * (i + 0.5f);
       float pos_y = y_offset + step * (j + 0.5f);
 
