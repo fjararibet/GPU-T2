@@ -122,8 +122,8 @@ int main(int argc, char** argv) {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  size_t N = 30;
-  size_t M = 30;
+  size_t N = 100;
+  size_t M = 100;
   std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
   for (size_t i = 0; i < N; i++) {
     for (size_t j = 0; j < M; j++) {
@@ -231,19 +231,21 @@ int main(int argc, char** argv) {
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
     gol->tick();
     auto grid = gol->get_grid();
-    // for (size_t i = 0; i < grid.size(); i++) {
-    //   for (size_t j = 0; j < grid[0].size(); j++) {
-    //     float v = grid[i][j] ? 1.0f : 0.3f;
-    //     size_t base_index = (i * grid[0].size() + j) * 6 * 6;
-    //     for (size_t vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
-    //       for (size_t index = vertex + 3; index < vertex + 6; index++) {
-    //         vertices[index] = v;
-    //         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //         glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
-    //       }
-    //     }
-    //   }
-    // }
+    for (size_t i = 0; i < grid.size(); i++) {
+      for (size_t j = 0; j < grid[0].size(); j++) {
+        float v = grid[i][j] ? 1.0f : 0.3f;
+        size_t base_index = (i * grid[0].size() + j) * 6 * 6;
+        for (size_t vertex = base_index; vertex < base_index + 6 * 6; vertex += 6) {
+          for (size_t index = vertex + 3; index < vertex + 6; index++) {
+            vertices[index] = v;
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(float), sizeof(float), &vertices[index]);
+          }
+        }
+      }
+    }
+
+
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time
 
@@ -275,7 +277,6 @@ void processInput(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
 
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !key_press[GLFW_KEY_SPACE]) {
-    std::cout << "space" << std::endl;
     key_press[GLFW_KEY_SPACE] = true;
     GameOfLifeCPU *pgol = static_cast<GameOfLifeCPU *>(glfwGetWindowUserPointer(window));
     pgol->tick();
