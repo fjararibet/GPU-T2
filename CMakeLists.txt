@@ -15,6 +15,6 @@ find_package(OpenCL REQUIRED)
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
 add_executable(GameOfLife ${SOURCES})
 
-target_include_directories(GameOfLife PRIVATE include/)
-target_link_libraries(GameOfLife PRIVATE glfw)
+target_include_directories(GameOfLife PRIVATE include/ ${OpenCL_INCLUDE_DIRS})
+target_link_libraries(GameOfLife PRIVATE glfw ${OpenCL_LIBRARIES})
 

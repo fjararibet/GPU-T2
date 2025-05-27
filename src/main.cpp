@@ -122,8 +122,8 @@ int main(int argc, char** argv) {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
-  size_t N = 100;
-  size_t M = 100;
+  size_t N = 50;
+  size_t M = 50;
   std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
   for (size_t i = 0; i < N; i++) {
     for (size_t j = 0; j < M; j++) {
