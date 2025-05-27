@@ -5,7 +5,7 @@
 #include <utility>
 
 std::string kernel = R"(
-kernel void vecadd( global int* In, global int* Out) {
+kernel void gameOfLife(global int* In, global int* Out) {
     const int idx = get_global_id(0);
     Out[idx] = In[idx];
 }
@@ -13,36 +13,68 @@ kernel void vecadd( global int* In, global int* Out) {
 
 GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(grid_) {
   try {
-    // Query for platforms
-    std::vector<cl::Platform> platforms;
-    cl::Platform::get(&platforms);
+  // Query for platforms
+  std::vector<cl::Platform> platforms;
+  cl::Platform::get(&platforms);
 
-    // Get a list of devices on this platform
-    std::vector<cl::Device> devices;
-    // Select the platform.
-    size_t platform_id = 0;
-    platforms[platform_id].getDevices(CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU, &devices);
+  // Get a list of devices on this platform
+  std::vector<cl::Device> devices;
+  // Select the platform.
+  size_t platform_id = 0;
+  platforms[platform_id].getDevices(CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU, &devices);
 
-    // Create a context
-    cl::Context context(devices);
+  // Create a context
+  cl::Context context(devices);
 
-    size_t device_id = 0;
-    cl::CommandQueue queue = cl::CommandQueue(context, devices[device_id]);
+  size_t device_id = 0;
+  cl::CommandQueue queue = cl::CommandQueue(context, devices[device_id]);
 
-    // Create the memory buffers
-    size_t N_ELEMENTS = grid.size() * grid[0].size();
-    cl::Buffer bufferIn = cl::Buffer(context, CL_MEM_READ_ONLY, N_ELEMENTS * sizeof(int));
-    cl::Buffer bufferOut = cl::Buffer(context, CL_MEM_READ_ONLY, N_ELEMENTS * sizeof(int));
+  // Create the memory buffers
+  size_t N_ELEMENTS = grid.size() * grid[0].size();
+  cl::Buffer bufferIn = cl::Buffer(context, CL_MEM_READ_ONLY, N_ELEMENTS * sizeof(int));
+  cl::Buffer bufferOut = cl::Buffer(context, CL_MEM_READ_ONLY, N_ELEMENTS * sizeof(int));
 
-    // Copy the input data to the input buffers using the command queue.
-    std::vector<int> In(grid.size() * grid[0].size());
-    for (size_t i = 0; i < grid.size(); i++) {
-      for (size_t j = 0; j < grid[0].size(); j++) {
-        In[i * grid[0].size() + j] = grid[i][j];
-      }
+  // Copy the input data to the input buffers using the command queue.
+  std::vector<int> In(grid.size() * grid[0].size());
+  for (size_t i = 0; i < grid.size(); i++) {
+    for (size_t j = 0; j < grid[0].size(); j++) {
+      In[i * grid[0].size() + j] = grid[i][j];
     }
-    queue.enqueueWriteBuffer(bufferIn, CL_FALSE, 0, N_ELEMENTS * sizeof(int), In.data());
-    cl::Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length()));
+  }
+  queue.enqueueWriteBuffer(bufferIn, CL_FALSE, 0, N_ELEMENTS * sizeof(int), In.data());
+  cl::Program::Sources source{{kernel.c_str(), kernel.length()}};
+  cl::Program program;
+  cl_int err;
+  try {
+    program = cl::Program(context, source);
+    err = program.build(devices);
+  } catch (cl::BuildError &e) {
+    std::cerr << "Build failed: " << e.what() << std::endl;
+    for (const auto &pair : e.getBuildLog()) {
+      std::cerr << "Device: " << pair.first.getInfo<CL_DEVICE_NAME>() << "\n";
+      std::cerr << "Build log:\n" << pair.second << std::endl;
+    }
+  }
+  cl::Kernel gol_kernel(program, "gameOfLife");
+  gol_kernel.setArg(0, bufferIn);
+  gol_kernel.setArg(1, bufferOut);
+
+  // Execute the kernel
+  size_t local_size = 256;
+  size_t global_size = ((N_ELEMENTS + local_size - 1) / local_size) * local_size;
+  cl::NDRange global(global_size);
+  cl::NDRange local(256);
+  queue.enqueueNDRangeKernel(gol_kernel, cl::NullRange, global, local);
+
+  // Copy the output data back to the host
+  std::vector<int> Out(grid.size() * grid[0].size());
+  queue.enqueueReadBuffer(bufferOut, CL_TRUE, 0, N_ELEMENTS * sizeof(int), Out.data());
+  for (size_t i = 0; i < grid.size(); i++) {
+    for (size_t j = 0; j < grid[0].size(); j++) {
+      std::cout << Out[i * grid[0].size() + j] << " ";
+    }
+    std::cout << std::endl;
+  }
 
   } catch (cl::Error err) {
     std::cout << "Error: " << err.what() << "(" << err.err() << ")" << std::endl;
