@@ -7,13 +7,13 @@
 #include "gameOfLife/cuda.hpp"
 #include "gameOfLife/interface.hpp"
 #include "gameOfLife/opencl.hpp"
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <vector>
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -72,8 +72,6 @@ int main(int argc, char **argv) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
-
 #ifdef __APPLE__
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -99,8 +97,8 @@ int main(int argc, char **argv) {
   // ImGui
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO(); 
-  (void) io;
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 450");
@@ -233,12 +231,11 @@ int main(int argc, char **argv) {
   // render loop
   // -----------
   while (!glfwWindowShouldClose(window)) {
+
     // input
-    // -----
     processInput(window);
 
     // render
-    // ------
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -247,6 +244,18 @@ int main(int argc, char **argv) {
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it
                             // every time, but we'll do so to keep things a bit more organized
     glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 6);
+    // ImGui
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Build UI
+    ImGui::Begin("Hello, ImGui!");
+    ImGui::Text("This is a test window.");
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     tick_vertices();
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -260,7 +269,11 @@ int main(int argc, char **argv) {
     // -------------------------------------------------------------------------------
     glfwSwapBuffers(window);
     glfwPollEvents();
+
   }
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 
   // optional: de-allocate all resources once they've outlived their purpose:
   // ------------------------------------------------------------------------
