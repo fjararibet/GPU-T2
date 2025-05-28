@@ -281,19 +281,19 @@ void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !key_press[GLFW_KEY_SPACE]) {
-    key_press[GLFW_KEY_SPACE] = true;
-    cpu = !cpu;
-    auto curr_grid = gol->get_grid();
-    if (cpu) {
-      gol = std::make_unique<GameOfLifeCPU>(curr_grid);
-    } else {
-      gol = std::make_unique<GameOfLifeOpenCL>(curr_grid, workgroup_x, workgroup_y);
-    }
-  }
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-    key_press[GLFW_KEY_SPACE] = false;
-  }
+  // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !key_press[GLFW_KEY_SPACE]) {
+  //   key_press[GLFW_KEY_SPACE] = true;
+  //   cpu = !cpu;
+  //   auto curr_grid = gol->get_grid();
+  //   if (cpu) {
+  //     gol = std::make_unique<GameOfLifeCPU>(curr_grid);
+  //   } else {
+  //     gol = std::make_unique<GameOfLifeOpenCL>(curr_grid, workgroup_x, workgroup_y);
+  //   }
+  // }
+  // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+  //   key_press[GLFW_KEY_SPACE] = false;
+  // }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback
@@ -346,7 +346,7 @@ void set_gol(std::vector<std::vector<int>> &grid) {
   if (cpu)
     gol = std::make_unique<GameOfLifeCPU>(grid);
   if (cuda)
-    gol = std::make_unique<GameOfLifeCuda>(grid);
+    gol = std::make_unique<GameOfLifeCuda>(grid, workgroup_x, workgroup_y);
   if (opencl)
     gol = std::make_unique<GameOfLifeOpenCL>(grid, workgroup_x, workgroup_y);
 }
