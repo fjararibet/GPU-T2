@@ -1,4 +1,4 @@
-#define CL_HPP_TARGET_OPENCL_VERSION 450
+#define CL_HPP_TARGET_OPENCL_VERSION 300
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
   (void)io;
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
-  ImGui_ImplOpenGL3_Init("#version 450");
+  ImGui_ImplOpenGL3_Init("#version 330");
 
   // build and compile our shader program
   // ------------------------------------

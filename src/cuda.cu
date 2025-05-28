@@ -1,13 +1,10 @@
 #include "gameOfLife/cuda.hpp"
-#include <cuda_runtime.h>
 #include <iostream>
 
 __global__ void gameOfLifeKernel(int *In, int *Out, int n, int m) {
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  int N = n * m;
-  if (idx < n * m) {
-    int curr_row = idx / m;
-    int curr_col = idx % m;
+  int curr_col = blockIdx.x * blockDim.x + threadIdx.x;
+  int curr_row = blockIdx.y * blockDim.y + threadIdx.y;
+  if (curr_row < n && curr_col < m) {
     int neighbor_count = 0;
     for (int row = curr_row - 1; row <= curr_row + 1; row++) {
       if (row < 0 || row >= n)
@@ -52,10 +49,12 @@ GameOfLifeCuda::GameOfLifeCuda(std::vector<std::vector<int>> &grid_) : grid(grid
 
 void GameOfLifeCuda::tick() {
   int totalThreads = N_ELEMENTS;
-  int threadsPerBlock = 256;
+  int threadsPerBlock = 16;
   int blocksPerGrid = (totalThreads + threadsPerBlock - 1) / threadsPerBlock;
+  dim3 blockDim(threadsPerBlock, threadsPerBlock);
+  dim3 gridDim(blocksPerGrid, blocksPerGrid);
 
-  gameOfLifeKernel<<<blocksPerGrid, threadsPerBlock>>>(deviceIn, deviceOut, n, m);
+  gameOfLifeKernel<<<gridDim, blockDim>>>(deviceIn, deviceOut, n, m);
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
     std::cerr << "CUDA launch error: " << cudaGetErrorString(err) << std::endl;

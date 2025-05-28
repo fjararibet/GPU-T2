@@ -12,7 +12,7 @@ private:
   int *deviceIn;
   int *deviceOut;
   size_t n, m, N_ELEMENTS;
-  int threadsPerBlock = 256;
+  int threadsPerBlock = 16;
   int blocksPerGrid;
 
 public:
