@@ -1,29 +1,30 @@
 #include <cuda_runtime.h>
-#include "gameOfLife/cuda.hpp"
 #include <iostream>
-#include <vector>
-#include <algorithm>
+#include "gameOfLife/cuda.hpp"
 
 __global__ void gameOfLifeKernel(int* In, int* Out, int n, int m) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < n * m) {
-        int curr_row = idx / m;
-        int curr_col = idx % m;
-        int neighbor_count = 0;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-        for (int row = curr_row - 1; row <= curr_row + 1; row++) {
-            if (row < 0 || row >= n) continue;
-            for (int col = curr_col - 1; col <= curr_col + 1; col++) {
-                if (col < 0 || col >= m) continue;
-                if (row == curr_row && col == curr_col) continue;
-                if (In[row * m + col]) neighbor_count++;
-            }
+    if (row >= n || col >= m) return;
+
+    int neighbor_count = 0;
+    for (int i = row - 1; i <= row + 1; i++) {
+        if (i < 0 || i >= n) continue;
+        for (int j = col - 1; j <= col + 1; j++) {
+            if (j < 0 || j >= m) continue;
+            if (i == row && j == col) continue;
+            if (In[i * m + j]) neighbor_count++;
         }
-
-        int current = In[curr_row * m + curr_col];
-        int new_cell = (current && (neighbor_count == 2 || neighbor_count == 3)) || (!current && neighbor_count == 3);
-        Out[curr_row * m + curr_col] = new_cell;
     }
+
+    int current = In[row * m + col];
+    int new_cell = current && (neighbor_count == 2 || neighbor_count == 3);
+    if (neighbor_count == 3) {
+      new_cell = 1;
+    }
+    // Out[row * m + col] = new_cell;
+    Out[row * m + col] = current;
 }
 
 
@@ -55,6 +56,12 @@ void GameOfLifeCuda::tick() {
     for (size_t i = 0; i < n; ++i)
         for (size_t j = 0; j < m; ++j)
             grid[i][j] = hostOut[i * m + j];
+
+    bool ok = true;
+    for (size_t i = 0; i < n; ++i)
+        for (size_t j = 0; j < m; ++j)
+          ok = hostIn[i * m + j] != hostOut[i * m + j] ? false : ok;
+    std::cout << (ok ? "ok" : "not") << std::endl;
 
     std::swap(deviceIn, deviceOut);
     std::swap(hostIn, hostOut);
