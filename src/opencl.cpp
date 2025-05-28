@@ -36,7 +36,6 @@ GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(
   size_t N_ELEMENTS = n * m;
 
   try {
-    // Query for platforms
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
 
@@ -52,7 +51,6 @@ GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(
     bufferInHost.resize(N_ELEMENTS);
     bufferOutHost.resize(N_ELEMENTS);
 
-    // Copy initial grid to bufferInHost
     for (size_t i = 0; i < n; i++) {
       for (size_t j = 0; j < m; j++) {
         bufferInHost[i * m + j] = grid[i][j];
@@ -71,7 +69,6 @@ GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(
     }
     global_size = ((N_ELEMENTS + local_size - 1) / local_size) * local_size;
 
-    // Write initial data once
     queue.enqueueWriteBuffer(bufferIn, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferInHost.data());
     queue.finish();
   } catch (cl::Error err) {
@@ -83,31 +80,25 @@ void GameOfLifeOpenCL::tick() {
   size_t N_ELEMENTS = n * m;
 
   try {
-    // Set kernel arguments for this run
     gol_kernel.setArg(0, bufferIn);
     gol_kernel.setArg(1, bufferOut);
     gol_kernel.setArg(2, (int)n);
     gol_kernel.setArg(3, (int)m);
 
-    // Run the kernel
     queue.enqueueNDRangeKernel(gol_kernel, cl::NullRange, cl::NDRange(global_size), cl::NDRange(local_size));
 
-    // Read output buffer back to host
     queue.enqueueReadBuffer(bufferOut, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferOutHost.data());
     queue.finish();
 
-    // Update grid from bufferOutHost
     for (size_t i = 0; i < n; i++) {
       for (size_t j = 0; j < m; j++) {
         grid[i][j] = bufferOutHost[i * m + j];
       }
     }
 
-    // Swap buffers for next iteration:
     std::swap(bufferIn, bufferOut);
     std::swap(bufferInHost, bufferOutHost);
 
-    // Write new input buffer for next kernel execution
     queue.enqueueWriteBuffer(bufferIn, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferInHost.data());
     queue.finish();
   } catch (cl::Error err) {

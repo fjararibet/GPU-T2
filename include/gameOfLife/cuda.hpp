@@ -11,9 +11,9 @@ private:
   std::vector<int> hostIn, hostOut;
   int *deviceIn;
   int *deviceOut;
-  size_t n, m, N_ELEMENTS;
-  int threadsPerBlock = 16;
-  int blocksPerGrid;
+  size_t n, m;
+  int threadsPerBlockX = 16;
+  int threadsPerBlockY = 16;
 
 public:
   GameOfLifeCuda(std::vector<std::vector<int>> &grid_);

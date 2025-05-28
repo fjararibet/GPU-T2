@@ -1,5 +1,4 @@
 #include "gameOfLife/cuda.hpp"
-#include <iostream>
 
 __global__ void gameOfLifeKernel(int *In, int *Out, int n, int m) {
   int curr_col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -31,8 +30,7 @@ __global__ void gameOfLifeKernel(int *In, int *Out, int n, int m) {
 GameOfLifeCuda::GameOfLifeCuda(std::vector<std::vector<int>> &grid_) : grid(grid_) {
   n = grid.size();
   m = grid[0].size();
-  N_ELEMENTS = n * m;
-  blocksPerGrid = (N_ELEMENTS + threadsPerBlock - 1) / threadsPerBlock;
+  int N_ELEMENTS = n * m;
 
   hostIn.resize(N_ELEMENTS);
   hostOut.resize(N_ELEMENTS);
@@ -48,11 +46,11 @@ GameOfLifeCuda::GameOfLifeCuda(std::vector<std::vector<int>> &grid_) : grid(grid
 }
 
 void GameOfLifeCuda::tick() {
-  int totalThreads = N_ELEMENTS;
-  int threadsPerBlock = 16;
-  int blocksPerGrid = (totalThreads + threadsPerBlock - 1) / threadsPerBlock;
-  dim3 blockDim(threadsPerBlock, threadsPerBlock);
-  dim3 gridDim(blocksPerGrid, blocksPerGrid);
+  int N_ELEMENTS = n * m;
+  threadsPerBlockX = 16;
+  threadsPerBlockY = 16;
+  dim3 blockDim(threadsPerBlockX, threadsPerBlockY);
+  dim3 gridDim((m + threadsPerBlockX - 1) / threadsPerBlockX, (n + threadsPerBlockY - 1) / threadsPerBlockY);
 
   gameOfLifeKernel<<<gridDim, blockDim>>>(deviceIn, deviceOut, n, m);
   cudaError_t err = cudaGetLastError();
