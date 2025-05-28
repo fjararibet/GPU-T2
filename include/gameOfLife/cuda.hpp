@@ -1,4 +1,9 @@
+#pragma once
 #include "interface.hpp"
+
+#ifdef __CUDACC__
+__global__ void gameOfLifeKernel(int* In, int* Out, int n, int m);
+#endif
 
 class GameOfLifeCuda : public GameOfLifeInterface {
 private:

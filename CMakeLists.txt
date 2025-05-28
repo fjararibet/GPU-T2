@@ -41,8 +41,9 @@ add_executable(GameOfLife ${SOURCES})
 target_include_directories(GameOfLife PRIVATE include/ ${OpenCL_INCLUDE_DIRS})
 target_link_libraries(GameOfLife PRIVATE glfw imgui ${OpenCL_LIBRARIES})
 
+# set(CMAKE_CUDA_ARCHITECTURES native)
 set_target_properties(GameOfLife PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
-    CUDA_ARCHITECTURES 75
+    CUDA_ARCHITECTURES native
 )
 
