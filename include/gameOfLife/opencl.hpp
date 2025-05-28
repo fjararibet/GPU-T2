@@ -14,9 +14,10 @@ private:
   std::vector<int> bufferOutHost;
   int workgroup_x;
   int workgroup_y;
+  bool local;
 
 public:
-  GameOfLifeOpenCL(std::vector<std::vector<int>> &grid, int workgroup_x, int workgroup_y);
+  GameOfLifeOpenCL(std::vector<std::vector<int>> &grid, int workgroup_x, int workgroup_y, bool local);
   void tick();
   const std::vector<std::vector<int>> get_grid() const;
 };

@@ -60,6 +60,7 @@ bool opencl = false;
 bool cpu = true;
 int workgroup_x = 16;
 int workgroup_y = 16;
+bool local = false;
 int main(int argc, char **argv) {
   for (int i = 0; i < argc; i++) {
     std::string arg = argv[i];
@@ -70,6 +71,9 @@ int main(int argc, char **argv) {
     if (arg == "--workgroup-y") {
       std::string val = argv[i+1];
       workgroup_y = std::stoi(val);
+    }
+    if (arg == "--local") {
+      local = true;
     }
   }
   // glfw: initialize and configure
@@ -348,7 +352,7 @@ void set_gol(std::vector<std::vector<int>> &grid) {
   if (cuda)
     gol = std::make_unique<GameOfLifeCuda>(grid, workgroup_x, workgroup_y);
   if (opencl)
-    gol = std::make_unique<GameOfLifeOpenCL>(grid, workgroup_x, workgroup_y);
+    gol = std::make_unique<GameOfLifeOpenCL>(grid, workgroup_x, workgroup_y, local);
 }
 void set_vertices() {
   vertices.clear();
