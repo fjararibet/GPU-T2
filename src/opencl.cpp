@@ -30,7 +30,8 @@ kernel void gameOfLife(global int* In, global int* Out, int n, int m) {
 }
 )";
 
-GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(grid_) {
+GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid, int workgroup_x, int workgroup_y)
+    : grid(grid), workgroup_x(workgroup_x), workgroup_y(workgroup_y) {
   n = grid.size();
   m = grid[0].size();
   size_t N_ELEMENTS = n * m;
@@ -85,7 +86,7 @@ void GameOfLifeOpenCL::tick() {
     gol_kernel.setArg(2, (int)n);
     gol_kernel.setArg(3, (int)m);
 
-    size_t local_x = 16, local_y = 16;
+    size_t local_x = workgroup_x, local_y = workgroup_y;
     size_t global_x = ((m + local_x - 1) / local_x) * local_x;
     size_t global_y = ((n + local_y - 1) / local_y) * local_y;
 

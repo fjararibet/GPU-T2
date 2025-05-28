@@ -12,11 +12,11 @@ private:
   size_t n, m;
   std::vector<int> bufferInHost;
   std::vector<int> bufferOutHost;
-  cl::NDRange local_size;
-  cl::NDRange global_size;
+  int workgroup_x;
+  int workgroup_y;
 
 public:
-  GameOfLifeOpenCL(std::vector<std::vector<int>> &grid);
+  GameOfLifeOpenCL(std::vector<std::vector<int>> &grid, int workgroup_x, int workgroup_y);
   void tick();
   const std::vector<std::vector<int>> get_grid() const;
 };

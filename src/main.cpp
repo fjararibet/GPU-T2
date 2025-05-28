@@ -1,3 +1,4 @@
+#include <cstdlib>
 #define CL_HPP_TARGET_OPENCL_VERSION 300
 #include <glad/glad.h>
 
@@ -57,15 +58,18 @@ std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
 bool cuda = false;
 bool opencl = false;
 bool cpu = true;
+int workgroup_x = 16;
+int workgroup_y = 16;
 int main(int argc, char **argv) {
   for (int i = 0; i < argc; i++) {
     std::string arg = argv[i];
-    if (arg == "--cuda") {
-      cuda = true;
-      cpu = false;
-    } else if (arg == "--opencl") {
-      opencl = true;
-      cpu = false;
+    if (arg == "--workgroup-x") {
+      std::string val = argv[i+1];
+      workgroup_x = std::stoi(val);
+    }
+    if (arg == "--workgroup-y") {
+      std::string val = argv[i+1];
+      workgroup_y = std::stoi(val);
     }
   }
   // glfw: initialize and configure
@@ -284,7 +288,7 @@ void processInput(GLFWwindow *window) {
     if (cpu) {
       gol = std::make_unique<GameOfLifeCPU>(curr_grid);
     } else {
-      gol = std::make_unique<GameOfLifeOpenCL>(curr_grid);
+      gol = std::make_unique<GameOfLifeOpenCL>(curr_grid, workgroup_x, workgroup_y);
     }
   }
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
@@ -344,7 +348,7 @@ void set_gol(std::vector<std::vector<int>> &grid) {
   if (cuda)
     gol = std::make_unique<GameOfLifeCuda>(grid);
   if (opencl)
-    gol = std::make_unique<GameOfLifeOpenCL>(grid);
+    gol = std::make_unique<GameOfLifeOpenCL>(grid, workgroup_x, workgroup_y);
 }
 void set_vertices() {
   vertices.clear();
