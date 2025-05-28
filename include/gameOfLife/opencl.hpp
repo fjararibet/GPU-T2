@@ -12,8 +12,8 @@ private:
   size_t n, m;
   std::vector<int> bufferInHost;
   std::vector<int> bufferOutHost;
-  size_t local_size = 256;
-  size_t global_size;
+  cl::NDRange local_size;
+  cl::NDRange global_size;
 
 public:
   GameOfLifeOpenCL(std::vector<std::vector<int>> &grid);

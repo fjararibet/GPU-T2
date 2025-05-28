@@ -1,4 +1,5 @@
 #include "gameOfLife/cuda.hpp"
+#include <iostream>
 
 __global__ void gameOfLifeKernel(int *In, int *Out, int n, int m) {
   int curr_col = blockIdx.x * blockDim.x + threadIdx.x;

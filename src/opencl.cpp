@@ -1,14 +1,14 @@
-#define __CL_ENABLE_EXCEPTIONS
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_TARGET_OPENCL_VERSION 300
 #include "gameOfLife/opencl.hpp"
 #include <iostream>
 #include <utility>
 
 std::string kernel = R"(
 kernel void gameOfLife(global int* In, global int* Out, int n, int m) {
-    const int idx = get_global_id(0);
-    if (idx < n * m) {
-        int curr_row = idx / m;
-        int curr_col = idx % m;
+    const int curr_col = get_global_id(0);
+    const int curr_row = get_global_id(1);
+    if (curr_row >= 0 && curr_col < n && curr_col >= 0 && curr_col < m) {
         int neighbor_count = 0;
         for(int row = curr_row - 1; row <= curr_row + 1; row++) {
           if (row < 0 || row >= n) continue;
@@ -63,11 +63,11 @@ GameOfLifeOpenCL::GameOfLifeOpenCL(std::vector<std::vector<int>> &grid_) : grid(
 
     gol_kernel = cl::Kernel(program, "gameOfLife");
 
-    auto max_work_group_size = devices[0].getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
-    if (local_size > max_work_group_size) {
-      local_size = max_work_group_size;
-    }
-    global_size = ((N_ELEMENTS + local_size - 1) / local_size) * local_size;
+    // check for max work group size
+    // auto max_work_group_size = devices[0].getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>();
+    // if (local_size > max_work_group_size) {
+    //   local_size = max_work_group_size;
+    // }
 
     queue.enqueueWriteBuffer(bufferIn, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferInHost.data());
     queue.finish();
@@ -85,7 +85,13 @@ void GameOfLifeOpenCL::tick() {
     gol_kernel.setArg(2, (int)n);
     gol_kernel.setArg(3, (int)m);
 
-    queue.enqueueNDRangeKernel(gol_kernel, cl::NullRange, cl::NDRange(global_size), cl::NDRange(local_size));
+    size_t local_x = 16, local_y = 16;
+    size_t global_x = ((m + local_x - 1) / local_x) * local_x;
+    size_t global_y = ((n + local_y - 1) / local_y) * local_y;
+
+    cl::NDRange local_size(local_x, local_y);
+    cl::NDRange global_size(global_x, global_y);
+    queue.enqueueNDRangeKernel(gol_kernel, cl::NullRange, global_size, local_size);
 
     queue.enqueueReadBuffer(bufferOut, CL_TRUE, 0, N_ELEMENTS * sizeof(int), bufferOutHost.data());
     queue.finish();
