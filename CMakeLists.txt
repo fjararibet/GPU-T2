@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.16)
-project(GameOfLife)
+cmake_minimum_required(VERSION 3.18)
+project(GameOfLife LANGUAGES C CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -pedantic -std=c++17 -Wshadow -Wformat=2 -Wfloat-equal -Wconversion -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC")
+
 
 # GLFW
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Disable GLFW examples")
@@ -34,10 +34,15 @@ target_include_directories(imgui PUBLIC
 find_package(OpenCL REQUIRED)
 
 # Your sources
-file(GLOB SOURCES "src/*.cpp" "src/*.c")
+file(GLOB SOURCES "src/*.cpp" "src/*.c" "src/*.cu")
 add_executable(GameOfLife ${SOURCES})
 
 # Includes & linking
 target_include_directories(GameOfLife PRIVATE include/ ${OpenCL_INCLUDE_DIRS})
 target_link_libraries(GameOfLife PRIVATE glfw imgui ${OpenCL_LIBRARIES})
+
+set_target_properties(GameOfLife PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_ARCHITECTURES 75
+)
 

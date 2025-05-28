@@ -4,7 +4,7 @@ class GameOfLifeCuda : public GameOfLifeInterface{
 private:
   std::vector<std::vector<int>> grid;
 public:
-  GameOfLifeCuda(std::vector<std::vector<int>> &grid);
+  GameOfLifeCuda(std::vector<std::vector<int>> &grid_);
   void tick();
   const std::vector<std::vector<int>> get_grid() const;
 };
