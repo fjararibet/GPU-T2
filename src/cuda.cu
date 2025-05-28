@@ -28,7 +28,7 @@ __global__ void gameOfLifeKernel(int *In, int *Out, int n, int m) {
   }
 }
 
-GameOfLifeCuda::GameOfLifeCuda(std::vector<std::vector<int>> &grid_, int workgroup_x, int workgroup_y) : grid(grid_), workgroup_x(workgroup_x), workgroup_y(workgroup_y) {
+GameOfLifeCuda::GameOfLifeCuda(std::vector<std::vector<int>> &grid_, int workgroup_x, int workgroup_y, bool local) : grid(grid_), workgroup_x(workgroup_x), workgroup_y(workgroup_y), local(local){
   n = grid.size();
   m = grid[0].size();
   int N_ELEMENTS = n * m;

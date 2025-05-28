@@ -27,7 +27,13 @@ kernel void gameOfLife(global int* In, global int* Out, int n, int m) {
 }
 )";
 std::string kernel_local_memory = R"(
-__kernel void gameOfLifeLocalMem(global int* In, global int* Out, const int n, const int m, local int* buf) {
+__kernel void gameOfLifeLocalMem(
+    global int* In,
+    global int* Out,
+    const int n,
+    const int m,
+    local int* buf
+) {
     const int gx = get_global_id(0);
     const int gy = get_global_id(1);
     const int lx = get_local_id(0);
@@ -35,26 +41,47 @@ __kernel void gameOfLifeLocalMem(global int* In, global int* Out, const int n, c
     const int lsize_x = get_local_size(0);
     const int lsize_y = get_local_size(1);
 
-    int local_index = (ly + 1) * (lsize_x + 2) + (lx + 1);
-    if (gx < m && gy < n) {
-        buf[local_index] = In[gy * m + gx];
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
+    const int shared_x = lx + 1;
+    const int shared_y = ly + 1;
+    const int shared_width = lsize_x + 2;
 
-    int neighbor_count = 0;
+    const int tile_origin_x = get_group_id(0) * lsize_x;
+    const int tile_origin_y = get_group_id(1) * lsize_y;
+
     for (int dy = -1; dy <= 1; dy++) {
         for (int dx = -1; dx <= 1; dx++) {
-            if (dx == 0 && dy == 0) continue;
-            int nx = lx + 1 + dx;
-            int ny = ly + 1 + dy;
-            neighbor_count += buf[ny * (lsize_x + 2) + nx];
+            int load_lx = lx + dx;
+            int load_ly = ly + dy;
+            int global_x = tile_origin_x + load_lx;
+            int global_y = tile_origin_y + load_ly;
+            int local_index = (shared_y + dy) * shared_width + (shared_x + dx);
+
+            if (load_lx >= -1 && load_lx < lsize_x + 1 &&
+                load_ly >= -1 && load_ly < lsize_y + 1) {
+
+                if (global_x >= 0 && global_x < m &&
+                    global_y >= 0 && global_y < n) {
+                    buf[local_index] = In[global_y * m + global_x];
+                } else {
+                    buf[local_index] = 0;
+                }
+            }
         }
     }
 
-    int curr = buf[local_index];
-    int new_cell = (curr && (neighbor_count == 2 || neighbor_count == 3)) || neighbor_count == 3;
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx < m && gy < n) {
+        int neighbor_count = 0;
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if (dx == 0 && dy == 0) continue;
+                neighbor_count += buf[(shared_y + dy) * shared_width + (shared_x + dx)];
+            }
+        }
+
+        int curr = buf[shared_y * shared_width + shared_x];
+        int new_cell = (curr && (neighbor_count == 2 || neighbor_count == 3)) || neighbor_count == 3;
         Out[gy * m + gx] = new_cell;
     }
 }

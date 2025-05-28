@@ -350,7 +350,7 @@ void set_gol(std::vector<std::vector<int>> &grid) {
   if (cpu)
     gol = std::make_unique<GameOfLifeCPU>(grid);
   if (cuda)
-    gol = std::make_unique<GameOfLifeCuda>(grid, workgroup_x, workgroup_y);
+    gol = std::make_unique<GameOfLifeCuda>(grid, workgroup_x, workgroup_y, local);
   if (opencl)
     gol = std::make_unique<GameOfLifeOpenCL>(grid, workgroup_x, workgroup_y, local);
 }

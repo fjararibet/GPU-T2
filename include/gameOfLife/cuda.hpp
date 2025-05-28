@@ -14,9 +14,10 @@ private:
   size_t n, m;
   int workgroup_x = 16;
   int workgroup_y = 16;
+  bool local = false;
 
 public:
-  GameOfLifeCuda(std::vector<std::vector<int>> &grid_, int workgroup_x, int workgroup_y);
+  GameOfLifeCuda(std::vector<std::vector<int>> &grid_, int workgroup_x, int workgroup_y, bool local);
   void tick();
   const std::vector<std::vector<int>> get_grid() const;
 };
