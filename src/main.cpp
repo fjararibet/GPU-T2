@@ -221,7 +221,12 @@ int main(int argc, char **argv) {
     ImGui::Begin("Game Of Life Controls");
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Cells/s: %.0f", ImGui::GetIO().Framerate * N * M);
-    if (ImGui::SliderInt("Rows", &M, 1, 1000) | ImGui::SliderInt("Columns", &N, 1, 1000)) {
+    if (
+        ImGui::SliderInt("Rows Slider", &M, 1, 1000) |
+        ImGui::InputInt("Rows Picker", &M) |
+        ImGui::SliderInt("Columns Slider", &N, 1, 1000) |
+        ImGui::InputInt("Columns Picker", &N)
+        ) {
       random_grid();
       set_gol(grid);
       set_vertices();
