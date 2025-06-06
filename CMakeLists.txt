@@ -35,14 +35,26 @@ find_package(OpenCL REQUIRED)
 
 # Your sources
 file(GLOB SOURCES "src/*.cpp" "src/*.c" "src/*.cu")
-add_executable(GameOfLife ${SOURCES})
+list(REMOVE_ITEM SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/test.cpp"
+)
+add_executable(GameOfLife ${SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+add_executable(GameOfLifeTest ${SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/test.cpp")
 
 # Includes & linking
 target_include_directories(GameOfLife PRIVATE include/ ${OpenCL_INCLUDE_DIRS})
 target_link_libraries(GameOfLife PRIVATE glfw imgui ${OpenCL_LIBRARIES})
 
-# set(CMAKE_CUDA_ARCHITECTURES native)
 set_target_properties(GameOfLife PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_ARCHITECTURES native
+)
+# Includes & linking
+target_include_directories(GameOfLifeTest PRIVATE include/ ${OpenCL_INCLUDE_DIRS})
+target_link_libraries(GameOfLifeTest PRIVATE glfw imgui ${OpenCL_LIBRARIES})
+
+set_target_properties(GameOfLifeTest PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
     CUDA_ARCHITECTURES native
 )
