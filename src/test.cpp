@@ -2,6 +2,7 @@
 #include "gameOfLife/cuda.hpp"
 #include "gameOfLife/interface.hpp"
 #include "gameOfLife/opencl.hpp"
+#include <chrono>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -9,7 +10,6 @@
 
 int N = 100;
 int M = 100;
-std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
 
 // cli args
 bool cuda = false;
@@ -18,6 +18,7 @@ bool cpu = true;
 int workgroup_x = 16;
 int workgroup_y = 16;
 bool local = false;
+int seconds = 10;
 int main(int argc, char **argv) {
   for (int i = 0; i < argc; i++) {
     std::string arg = argv[i];
@@ -31,6 +32,10 @@ int main(int argc, char **argv) {
     }
     if (arg == "--local") {
       local = true;
+    }
+    if (arg == "--seconds") {
+      std::string val = argv[i + 1];
+      seconds = std::stoi(val);
     }
     if (arg == "--cuda") {
       cuda = true;
@@ -47,6 +52,20 @@ int main(int argc, char **argv) {
       opencl = false;
       cuda = false;
     }
+  }
+    std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
+
+    // random grid
+    grid.resize(N);
+    for (auto &v : grid) {
+      v.resize(M);
+    }
+    for (int i = 0; i < N; i++) {
+      for (int j = 0; j < M; j++) {
+        grid[i][j] = rand() % 2 == 0;
+      }
+    }
+
     std::unique_ptr<GameOfLifeInterface> gol;
     if (cpu)
       gol = std::make_unique<GameOfLifeCPU>(grid);
@@ -54,18 +73,23 @@ int main(int argc, char **argv) {
       gol = std::make_unique<GameOfLifeCuda>(grid, workgroup_x, workgroup_y, local);
     else if (opencl)
       gol = std::make_unique<GameOfLifeOpenCL>(grid, workgroup_x, workgroup_y, local);
-  }
-  return 0;
-}
-
-void random_grid() {
-  grid.resize(N);
-  for (auto &v : grid) {
-    v.resize(M);
-  }
-  for (int i = 0; i < N; i++) {
-    for (int j = 0; j < M; j++) {
-      grid[i][j] = rand() % 2 == 0;
+    auto start = std::chrono::steady_clock::now();
+    long long loop_count = 0;
+    while (true) {
+      loop_count++;
+      gol->tick();
+      auto now = std::chrono::steady_clock::now();
+      std::chrono::duration<double> elapsed = now - start;
+      if (elapsed.count() >= seconds) {
+        break;
+      }
+      long long total_cells = loop_count * N * M;
+      if (total_cells < 0) {
+        std::cout << "overflow" << std::endl;
+      }
     }
-  }
+    long long cells_per_sec = loop_count * N * M / seconds;
+    std::cout << loop_count * N * M << " cells" << std::endl;
+    std::cout << cells_per_sec << " cells/s" << std::endl;
+  return 0;
 }
