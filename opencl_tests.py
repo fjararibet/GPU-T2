@@ -7,8 +7,10 @@ for n in range(100, 1000 + 1, 100):
     for m in range(100, 1000 + 1, 100):
         command = [
             "./build/GameOfLifeTest",
+            "--workgroup-x", "32",
+            "--workgroup-y", "32",
             "--seconds", "10",
-            "--cpu",
+            "--opencl",
             "-n", str(n),
             "-m", str(m),
         ]
@@ -16,7 +18,7 @@ for n in range(100, 1000 + 1, 100):
             print(f"running for n: {n} m: {m}")
             result = subprocess.run(command, check=True, capture_output=True, text=True)
             cells_per_sec = int(result.stdout.split()[0])
-            with open("cpu_results.csv", "a") as f:
+            with open("opencl_results.csv", "a") as f:
                 f.write(f"{n},{m},{cells_per_sec}\n")
         except subprocess.CalledProcessError as e:
             print("Command failed with return code", e.returncode)
