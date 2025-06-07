@@ -18,3 +18,13 @@ sudo apt install libwayland-dev
 ```
 git submodule update --init --recursive
 ```
+
+# Build and Run
+```
+mkdir build
+cd build
+cmake ..
+make
+./GameOfLife # GUI
+./GameOfLifeTest # Test simulation (NO GUI)
+```
