@@ -52,6 +52,14 @@ int main(int argc, char **argv) {
       opencl = false;
       cuda = false;
     }
+    if (arg == "-n") {
+      std::string val = argv[i + 1];
+      N = std::stoi(val);
+    }
+    if (arg == "-m") {
+      std::string val = argv[i + 1];
+      N = std::stoi(val);
+    }
   }
     std::vector<std::vector<int>> grid(N, std::vector<int>(M, 1));
 
@@ -83,13 +91,8 @@ int main(int argc, char **argv) {
       if (elapsed.count() >= seconds) {
         break;
       }
-      long long total_cells = loop_count * N * M;
-      if (total_cells < 0) {
-        std::cout << "overflow" << std::endl;
-      }
     }
     long long cells_per_sec = loop_count * N * M / seconds;
-    std::cout << loop_count * N * M << " cells" << std::endl;
     std::cout << cells_per_sec << " cells/s" << std::endl;
   return 0;
 }
